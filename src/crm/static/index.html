@@ -3,6 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script>
+        const dict = new Map([
+            [2048, 'Start of new game'],
+            [2049, 'Game ended']
+        ]);
+
+        function dateToString(d) {
+            d = new Date(d)
+
+            return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDay() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+        }
+
+        function connect() {
+            let socket = new WebSocket('ws://'+location.host+'/ws');
+
+            socket.onopen = () => {
+                console.log("Successfully Connected");
+            };
+
+            socket.onclose = event => {
+                console.log("Socket Closed Connection: ", event);
+                setTimeout(function () {
+                    connect();
+                }, 1000);
+            };
+
+            socket.onmessage = event => {
+                const data = JSON.parse(event.data);
+                console.log(data);
+                const message = dict.get(data.code);
+
+                const list = document.querySelector('#log ul');
+                list.innerHTML = '<li>' + dateToString(data.time) + ' [' + data.code + '] ' + message + '</li>' + list.innerHTML;
+            };
+        }
+        connect();
+    </script>
 </head>
 <body>
     <fieldset id="log">

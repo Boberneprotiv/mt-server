@@ -14,10 +14,6 @@ import (
 
 func main() {
 	game := game.NewGame(5 * time.Second)
-	erouter := event.NewEventRouter([]event.Handler{
-		handlers.NewChangeGameStatusHandler(2024, game),
-		handlers.NewEndOfGameHandler(2025),
-	})
 
 	events := make(chan event.Event, 1)
 	ereader := readers.NewIOReader(os.Stdin)
@@ -27,12 +23,18 @@ func main() {
 	ap := crm.NewAdminPanel(filepath.Join(workDir, "crm/static"), 8080)
 	go ap.Serve()
 
+	erouter := event.NewEventRouter([]event.Handler{
+		handlers.NewGameStartHandler(event.GameStart, game),
+		handlers.NewGameEndHandler(event.GameEnd, game),
+		handlers.NewNotificationLogHandler(ap.Notification),
+	})
+
 	for {
 		select {
 		case <-game.StopChan:
 			{
 				log.Printf("Stop of game")
-				events <- event.Event{Code: 2025}
+				events <- event.NewEvent(event.GameEnd)
 			}
 		case e := <-events:
 			{

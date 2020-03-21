@@ -21,6 +21,6 @@ func (r *IOReader) Run(events chan<- event.Event) {
 	scanner := bufio.NewScanner(r.r)
 	for scanner.Scan() {
 		e, _ := strconv.Atoi(scanner.Text())
-		events <- event.Event{Code: e}
+		events <- event.NewEvent(e)
 	}
 }
